@@ -14,8 +14,13 @@ export const channels = pgTable("channels", {
 
 export const insertChannelSchema = createInsertSchema(channels).omit({ id: true });
 
-export type Channel = typeof channels.$inferSelect;
-export type InsertChannel = z.infer<typeof insertChannelSchema>;
+export const devices = pgTable("devices", {
+  id: serial("id").primaryKey(),
+  mac: text("mac").notNull().unique(),
+  name: text("name"),
+  userId: text("user_id"), // linked to Discord ID
+});
 
-export type CreateChannelRequest = InsertChannel;
-export type UpdateChannelRequest = Partial<InsertChannel>;
+export const insertDeviceSchema = createInsertSchema(devices).omit({ id: true });
+export type Device = typeof devices.$inferSelect;
+export type InsertDevice = z.infer<typeof insertDeviceSchema>;
