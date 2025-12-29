@@ -18,34 +18,22 @@ async function seedDatabase() {
       isFavorite: true
     });
 
-    // Placeholders for other requested channels
-    await storage.createChannel({
-      name: "Top Channel",
-      url: "https://example.com/topchannel.m3u8", // User to update
-      category: "General",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/2/22/Top_Channel_Albania_logo.svg"
-    });
+    // Added Albanian Channels
+    const albanianChannels = [
+      { name: "Top Channel", url: "http://dfh992.com/m3u/al01_iptvm3ulist_com_120721.m3u", logo: "https://upload.wikimedia.org/wikipedia/commons/2/22/Top_Channel_Albania_logo.svg" },
+      { name: "Vizion Plus", url: "http://dfh992.com/m3u/al02_iptvm3ulist_com_120721.m3u", logo: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Vizion_Plus_logo.png" },
+      { name: "RTSH 1", url: "http://dfh992.com/m3u/al03_iptvm3ulist_com_120721.m3u", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/RTSH_logo.svg/1200px-RTSH_logo.svg.png" },
+      { name: "Klan Kosova", url: "http://dfh992.com/m3u/al04_iptvm3ulist_com_120721.m3u", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Klan_Kosova_Logo.svg/2560px-Klan_Kosova_Logo.svg.png" },
+      { name: "News 24", url: "http://dfh992.com/m3u/al05_iptvm3ulist_com_120721.m3u", logo: "https://upload.wikimedia.org/wikipedia/commons/5/5b/News24_Albania.png" }
+    ];
 
-    await storage.createChannel({
-      name: "Vizion Plus",
-      url: "https://example.com/vizionplus.m3u8", // User to update
-      category: "General",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/1/1e/Vizion_Plus_logo.png"
-    });
-
-    await storage.createChannel({
-      name: "RTSH 1",
-      url: "https://example.com/rtsh1.m3u8", // User to update
-      category: "Public",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/RTSH_logo.svg/1200px-RTSH_logo.svg.png"
-    });
-
-    await storage.createChannel({
-      name: "Klan Kosova",
-      url: "https://example.com/klankosova.m3u8", // User to update
-      category: "General",
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Klan_Kosova_Logo.svg/2560px-Klan_Kosova_Logo.svg.png"
-    });
+    for (const ch of albanianChannels) {
+      await storage.createChannel({
+        ...ch,
+        category: "Albanian",
+        isFavorite: false
+      });
+    }
   }
 }
 
