@@ -56,6 +56,12 @@ export function VideoPlayer({ url, onError, className, autoPlay = true }: VideoP
         config={{
           file: {
             forceHLS: true,
+            hlsOptions: {
+              enableWorker: true,
+              xhrSetup: (xhr: any) => {
+                xhr.withCredentials = false;
+              },
+            },
             attributes: {
               controlsList: 'nodownload',
               crossOrigin: 'anonymous',
