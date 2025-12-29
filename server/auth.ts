@@ -26,7 +26,7 @@ export function setupAuth(app: Express) {
   passport.use(new DiscordStrategy({
     clientID: process.env.DISCORD_CLIENT_ID!,
     clientSecret: process.env.DISCORD_CLIENT_SECRET!,
-    callbackURL: '/api/auth/callback',
+    callbackURL: 'https://e6e65b1a-ec3e-4f1c-bc9d-868e0c8ca8b2-00-vjefb4mg4eur.janeway.replit.dev/api/auth/callback',
     scope: ['identify', 'email']
   }, async (accessToken, refreshToken, profile, done) => {
     try {
