@@ -2,13 +2,27 @@ import { db } from "./db";
 import {
   channels,
   devices,
+  users,
   type Channel,
   type InsertChannel,
-  type UpdateChannelRequest,
   type Device,
   type InsertDevice,
+  type User,
+  type InsertUser,
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
+
+export const updateChannelSchema = z.object({
+  name: z.string().optional(),
+  url: z.string().optional(),
+  logo: z.string().optional(),
+  category: z.string().optional(),
+  userAgent: z.string().optional(),
+  isFavorite: z.boolean().optional(),
+});
+
+export type UpdateChannelRequest = z.infer<typeof updateChannelSchema>;
 
 export interface IStorage {
   getChannels(): Promise<Channel[]>;

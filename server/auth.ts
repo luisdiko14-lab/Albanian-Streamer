@@ -1,8 +1,15 @@
-import { Strategy as DiscordStrategy } from 'passport-discord';
+import { Strategy as DiscordStrategy, Profile } from 'passport-discord';
 import passport from 'passport';
 import type { Express } from 'express';
 import session from 'express-session';
 import { storage } from './storage';
+import { User } from '@shared/schema';
+
+declare global {
+  namespace Express {
+    interface User extends User {}
+  }
+}
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
