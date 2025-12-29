@@ -55,7 +55,7 @@ export function VideoPlayer({ url, onError, className, autoPlay = true }: VideoP
         onBufferEnd={handleBufferEnd}
         config={{
           file: {
-            forceHLS: url.endsWith('.m3u8'),
+            forceHLS: true,
             attributes: {
               controlsList: 'nodownload',
               crossOrigin: 'anonymous',
