@@ -5,6 +5,7 @@ import { VideoPlayer } from "@/components/VideoPlayer";
 import { ChannelForm } from "@/components/ChannelForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Plus, 
   Search, 
@@ -13,13 +14,21 @@ import {
   LayoutGrid, 
   ListFilter,
   Loader2,
-  Tv2
+  Tv2,
+  LogOut,
+  User as UserIcon,
+  LogIn
 } from "lucide-react";
-import { type Channel } from "@shared/schema";
+import { type Channel, type User } from "@shared/schema";
 import { api } from "@shared/routes";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const { data: channels, isLoading } = useChannels();
+  const { data: user } = useQuery<User>({ queryKey: ["/api/me"] });
+  const { toast } = useToast();
+  
   const createMutation = useCreateChannel();
   const updateMutation = useUpdateChannel();
   const deleteMutation = useDeleteChannel();
@@ -132,6 +141,37 @@ export default function Home() {
               <Plus className="w-5 h-5" />
               <span className="hidden sm:inline">Add Channel</span>
             </Button>
+
+            {user ? (
+              <div className="flex items-center gap-2 ml-2">
+                <Avatar className="h-9 w-9 border border-white/10">
+                  <AvatarImage src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`} />
+                  <AvatarFallback>{user.username[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-white"
+                  onClick={async () => {
+                    await fetch("/api/auth/logout", { method: "POST" });
+                    window.location.reload();
+                  }}
+                  data-testid="button-logout"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                className="gap-2 text-muted-foreground hover:text-white"
+                onClick={() => window.location.href = "/api/auth/login"}
+                data-testid="button-login"
+              >
+                <LogIn className="h-5 w-5" />
+                <span className="hidden sm:inline">Login</span>
+              </Button>
+            )}
           </div>
         </div>
       </header>

@@ -1,4 +1,4 @@
-import { Play, Edit2, Trash2, Heart } from "lucide-react";
+import { Play, Edit2, Trash2, Heart, Tv2 } from "lucide-react";
 import { useState } from "react";
 import { type Channel } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -92,6 +92,32 @@ export function ChannelCard({
             )}
           >
             <Heart className={cn("w-5 h-5", channel.isFavorite && "fill-current")} />
+          </button>
+        </div>
+
+        {/* Device Linking Button (New) */}
+        <div className={cn(
+          "absolute bottom-4 left-4 flex gap-2 transition-opacity duration-200",
+          isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}>
+          <button 
+            onClick={async (e) => { 
+              e.stopPropagation(); 
+              const mac = prompt("Enter LG WebOS MAC Address (e.g. AA:BB:CC:DD:EE:FF):");
+              if (mac) {
+                const res = await fetch("/api/devices/link", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ mac })
+                });
+                if (res.ok) alert("Device linked successfully!");
+                else alert("Failed to link device. Are you logged in?");
+              }
+            }}
+            className="p-2 rounded-lg bg-primary/20 hover:bg-primary/40 text-primary-foreground transition-colors border border-primary/20"
+            title="Link LG TV"
+          >
+            <Tv2 className="w-4 h-4" />
           </button>
         </div>
 
