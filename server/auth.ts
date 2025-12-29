@@ -1,13 +1,13 @@
-import { Strategy as DiscordStrategy, Profile } from 'passport-discord';
+import { Strategy as DiscordStrategy } from 'passport-discord';
 import passport from 'passport';
 import type { Express } from 'express';
 import session from 'express-session';
 import { storage } from './storage';
-import { User } from '@shared/schema';
+import { User as DbUser } from '@shared/schema';
 
 declare global {
   namespace Express {
-    interface User extends User {}
+    interface User extends DbUser {}
   }
 }
 
@@ -30,17 +30,19 @@ export function setupAuth(app: Express) {
     scope: ['identify', 'email']
   }, async (accessToken, refreshToken, profile, done) => {
     try {
+      console.log('Discord Profile:', profile);
       let user = await storage.getUser(profile.id);
       if (!user) {
         user = await storage.createUser({
           id: profile.id,
           username: profile.username,
-          email: profile.email!,
-          avatar: profile.avatar
+          email: profile.email || '',
+          avatar: profile.avatar || ''
         });
       }
       return done(null, user);
     } catch (err) {
+      console.error('Auth Error:', err);
       return done(err);
     }
   }));
