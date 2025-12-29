@@ -3,6 +3,7 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { setupAuth } from "./auth";
 
 async function seedDatabase() {
   const existing = await storage.getChannels();
@@ -42,8 +43,26 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
+  // Setup Authentication
+  setupAuth(app);
+
   // Seed data on startup
   seedDatabase();
+
+  // Device Linking
+  app.post("/api/devices/link", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const { mac } = req.body;
+    if (!mac) return res.status(400).json({ message: "MAC address required" });
+    
+    let device = await storage.getDeviceByMac(mac);
+    if (!device) {
+      device = await storage.createDevice({ mac, name: "LG WebOS TV" });
+    }
+    
+    const updated = await storage.linkDevice(mac, (req.user as any).id);
+    res.json(updated);
+  });
 
   // API Routes
   app.get(api.channels.list.path, async (req, res) => {
