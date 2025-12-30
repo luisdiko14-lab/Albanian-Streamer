@@ -1,0 +1,103 @@
+name: 🚀 Production CI/CD
+
+# Trigger on push to main or pull requests
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Allows manual run
+
+# "Cool" Feature: Concurrency
+# If you push a new commit while this is running, it cancels the old run to save resources.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Security: Least privilege access
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  # ------------------------------------------------------------------
+  # JOB 1: BACKEND CI (Runs in parallel with Frontend)
+  # ------------------------------------------------------------------
+  backend-ci:
+    name: 🛡️ Backend Security & Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend # 👈 CHANGE THIS to your backend folder name
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './backend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: 🔒 Security Audit
+        run: npm audit --audit-level=high
+
+      - name: 🧪 Run Tests
+        run: npm test --if-present
+
+  # ------------------------------------------------------------------
+  # JOB 2: FRONTEND BUILD (Prepares for GitHub Pages)
+  # ------------------------------------------------------------------
+  frontend-build:
+    name: 🏗️ Frontend Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend # 👈 CHANGE THIS to your frontend folder name
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: 🧹 Lint Check
+        run: npm run lint --if-present
+
+      - name: 📦 Build Project
+        run: npm run build
+        # Most frameworks (React/Vue/Vite) output to 'dist' or 'build'
+        
+      - name: Upload Artifact for Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./frontend/dist # 👈 CHANGE THIS to your build output folder (dist, build, out)
+
+  # ------------------------------------------------------------------
+  # JOB 3: DEPLOY (Only runs on Main branch & if Build succeeds)
+  # ------------------------------------------------------------------
+  deploy:
+    name: 🚀 Deploy to GitHub Pages
+    needs: frontend-build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
