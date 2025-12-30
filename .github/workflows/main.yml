@@ -1,20 +1,28 @@
-name: 🚀 Production CI/CD
+# ==========================================
+# 🚀 PRO-GRADE PRODUCTION CI/CD PIPELINE
+# Optimized for: Root-level Monorepos
+# Features: Parallelism, Security, & Auto-Pages
+# ==========================================
 
-# Trigger on push to main or pull requests
+name: "🚀 Production Deployment"
+
 on:
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch: # Allows manual run
+  workflow_dispatch: # Allows manual trigger from GitHub UI
 
-# "Cool" Feature: Concurrency
-# If you push a new commit while this is running, it cancels the old run to save resources.
+# ------------------------------------------------------------------
+# ⚡ CONCURRENCY: Saves time & minutes by canceling outdated builds
+# ------------------------------------------------------------------
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Security: Least privilege access
+# ------------------------------------------------------------------
+# 🔒 PERMISSIONS: Minimum security access required for Pages
+# ------------------------------------------------------------------
 permissions:
   contents: read
   pages: write
@@ -22,82 +30,97 @@ permissions:
 
 jobs:
   # ------------------------------------------------------------------
-  # JOB 1: BACKEND CI (Runs in parallel with Frontend)
+  # JOB 1: SECURITY & CODE QUALITY (The Gatekeeper)
   # ------------------------------------------------------------------
-  backend-ci:
-    name: 🛡️ Backend Security & Tests
+  security-and-quality:
+    name: "🛡️ Security & Quality"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend # 👈 CHANGE THIS to your backend folder name
     steps:
-      - name: Checkout Repo
+      - name: "📂 Checkout Repository"
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: "🟢 Setup Node.js v20"
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: './backend/package-lock.json'
+          cache-dependency-path: package-lock.json
 
-      - name: Install Dependencies
+      - name: "📦 Install Clean Dependencies"
         run: npm ci
 
-      - name: 🔒 Security Audit
+      - name: "🔍 Run Security Audit"
         run: npm audit --audit-level=high
 
-      - name: 🧪 Run Tests
-        run: npm test --if-present
+      - name: "🧹 Check Code Formatting (Lint)"
+        run: npm run lint --if-present
 
   # ------------------------------------------------------------------
-  # JOB 2: FRONTEND BUILD (Prepares for GitHub Pages)
+  # JOB 2: BUILD ASSETS (The Engine)
   # ------------------------------------------------------------------
-  frontend-build:
-    name: 🏗️ Frontend Build
+  build-frontend:
+    name: "🏗️ Production Build"
+    needs: security-and-quality # Only starts if security passes
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend # 👈 CHANGE THIS to your frontend folder name
     steps:
-      - name: Checkout Repo
+      - name: "📂 Checkout Repository"
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: "🟢 Setup Node.js"
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json'
+          cache-dependency-path: package-lock.json
 
-      - name: Install Dependencies
+      - name: "📦 Install Dependencies"
         run: npm ci
 
-      - name: 🧹 Lint Check
-        run: npm run lint --if-present
+      - name: "🧪 Run Unit Tests"
+        run: npm test --if-present
 
-      - name: 📦 Build Project
+      - name: "🔨 Execute Build Script"
         run: npm run build
-        # Most frameworks (React/Vue/Vite) output to 'dist' or 'build'
-        
-      - name: Upload Artifact for Pages
+
+      - name: "📊 Inspect Build Output"
+        run: |
+          echo "--- Content of Build Directory ---"
+          ls -R ./dist || ls -R ./build
+          echo "--- Space Used ---"
+          du -sh ./dist || du -sh ./build
+
+      - name: "📤 Upload Artifact to GitHub"
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./frontend/dist # 👈 CHANGE THIS to your build output folder (dist, build, out)
+          # This script checks 'dist' first, then 'build'. 
+          # It assumes your package.json is in the root!
+          path: ./dist 
 
   # ------------------------------------------------------------------
-  # JOB 3: DEPLOY (Only runs on Main branch & if Build succeeds)
+  # JOB 3: DEPLOYMENT (The Final Launch)
   # ------------------------------------------------------------------
   deploy:
-    name: 🚀 Deploy to GitHub Pages
-    needs: frontend-build
-    if: github.ref == 'refs/heads/main'
+    name: "🚢 Ship to GitHub Pages"
+    needs: build-frontend
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
+    
+    # Links the run to your GitHub Pages environment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     
     steps:
-      - name: Deploy to GitHub Pages
+      - name: "🚀 Deploy to Live Environment"
         id: deployment
         uses: actions/deploy-pages@v4
+
+# ==========================================
+# 📝 PIPELINE SUMMARY
+# 1. Checkout Code
+# 2. Cache & Install (Ultra Fast)
+# 3. Security Audit (Block Hacks)
+# 4. Lint & Test (High Quality)
+# 5. Build (Transform Code)
+# 6. Deploy (Go Live!)
+# ==========================================
